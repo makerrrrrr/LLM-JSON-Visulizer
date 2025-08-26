@@ -1,0 +1,57 @@
+{
+    "page_size": {
+      "width": 13.33,
+      "height": 7.5
+    },
+    "elements": [
+      {
+        "type": "title",
+        "content": "标题1",
+        "size": {
+          "width": 7.874,
+          "height": 0.63
+        },
+        "center": {
+          "x": 6.665,
+          "y": 0.815
+        }
+      },
+      {
+        "type": "text",
+        "content": "正文1",
+        "size": {
+          "width": 3.937,
+          "height": 1.969
+        },
+        "center": {
+          "x": 2.34825,
+          "y": 2.4845
+        }
+      },
+      {
+        "type": "text",
+        "content": "正文2",
+        "size": {
+          "width": 3.937,
+          "height": 1.969
+        },
+        "center": {
+          "x": 6.665,
+          "y": 2.4845
+        }
+      },
+      {
+        "type": "text",
+        "content": "正文3",
+        "size": {
+          "width": 3.937,
+          "height": 1.969
+        },
+        "center": {
+          "x": 10.98175,
+          "y": 2.4845
+        }
+      }
+    ]
+  }
+  

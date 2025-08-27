@@ -1,6 +1,8 @@
+import argparse
 import json
 import platform
-import matplotlib.patches as patches
+
+import matplotlib.patches as patches  # 这个模块可在绘图时创建各种图形补丁(如矩形、圆形、多边形、箭头等)的模块
 import matplotlib.pyplot as plt
 
 # 根据操作系统设置字体
@@ -25,14 +27,14 @@ def visualize_ppt_layout(json_data):
 
     # 绘制PPT页面边界（此时仍用左下角坐标，但后续会翻转y轴）
     page_rect = patches.Rectangle(
-        (0, 0),  # 初始左下角坐标，翻转y轴后会变成左上角
-        page_width,
-        page_height,
-        linewidth=2,
-        edgecolor='black',
-        facecolor='white'
+        (0, 0),  # 矩形初始左下角坐标，翻转y轴后会变成左上角
+        page_width,  # 矩形宽度
+        page_height,  # 矩形高度
+        linewidth=2,  # 边框线宽
+        edgecolor='black',  # 边框颜色
+        facecolor='white'  # 填充颜色
     )
-    ax.add_patch(page_rect)
+    ax.add_patch(page_rect)  # 将矩形添加到图形中
 
     # 定义不同类型元素的颜色
     color_map = {
@@ -81,6 +83,23 @@ def visualize_ppt_layout(json_data):
             fontsize=8
         )
 
+        # 添加尺寸信息标签（在元素右下角显示）
+        size_text = f"{elem_width:.1f}×{elem_height:.1f}"
+        size_x = x + elem_width - 0.1  # 右下角x坐标，稍微向左偏移
+        size_y = page_height - \
+            (elem_center_y + elem_height / 2) + 0.1  # 右下角y坐标，稍微向上偏移
+        plt.text(
+            size_x,
+            size_y,
+            size_text,
+            ha='right',
+            va='bottom',
+            fontsize=6,
+            color='darkblue',
+            weight='bold',
+            bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.8)
+        )
+
         # 添加元素类型标签（类型标签在元素左上角，同样转换y坐标）
         label_x = x  # 元素左下角x = 左上角x（x轴一致）
         label_y = page_height - (elem_center_y - elem_height / 2)  # 元素左上角y转换
@@ -116,9 +135,13 @@ def visualize_ppt_layout(json_data):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--json_file", type=str,
+                        default="ppt_layout_232s.json")
+    args = parser.parse_args()
     # 读取本地JSON文件（确保example.json和代码在同一目录）
     try:
-        with open('ppt_layout.json', 'r', encoding='utf-8') as f:
+        with open(args.json_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
         # 可视化
         visualize_ppt_layout(data)

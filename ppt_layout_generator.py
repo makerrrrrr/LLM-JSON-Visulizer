@@ -1,4 +1,4 @@
-# direct_json_generator.py
+# ppt_layout_generator.py
 import asyncio
 import json
 import os
@@ -38,6 +38,7 @@ class DirectJSONGenerator:
 
         response = self.client.chat.completions.create(
             model="deepseek-reasoner",
+            # model="qwen-vl-max",
             messages=messages,
             temperature=0.1
         )
@@ -52,28 +53,87 @@ class DirectJSONGenerator:
 async def main():
     generator = DirectJSONGenerator()
 
-    content = """我们的项目目标是开发一套面向中小企业的智能库存管理系统，帮助客户实现库存可视化、自动补货与预测分析。项目分为四个阶段：需求调研、系统开发、试点测试、正式上线。当前已完成前两个阶段，系统功能包括实时库存监控、预警机制、自动生成采购单等。下一步将进入试点阶段，选择3家客户进行测试并收集反馈。"""
+    # 记录总开始时间
+    total_start_time = time.time()
 
-    json_result = await generator.generate_layout_json(content)
-    print("\n📄 生成的JSON内容:")
-    print(json_result)
+    # 创建输出文件夹
+    import os
+    from datetime import datetime
 
-    # 保存JSON到文件
-    try:
-        # 尝试解析JSON以确保格式正确
-        parsed_json = json.loads(json_result)
+    # 生成带时间戳的文件夹名
+    timestamp = datetime.now().strftime("%m%d%H")
+    output_folder = f"{timestamp}_output"
 
-        # 保存到文件，格式化输出
-        with open("ppt_layout.json", "w", encoding="utf-8") as f:
-            json.dump(parsed_json, f, ensure_ascii=False, indent=2)
+    # 如果文件夹不存在则创建
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+        print(f"📁 创建输出文件夹: {output_folder}")
 
-        print(f"\n✅ JSON已保存到: ppt_layout.json")
-    except json.JSONDecodeError as e:
-        print(f"\n❌ JSON格式错误，无法保存: {e}")
-        # 保存原始文本作为备用
-        with open("ppt_layout_raw.txt", "w", encoding="utf-8") as f:
-            f.write(json_result)
-        print(f"原始内容已保存到: ppt_layout_raw.txt")
+    # 加载所有prompt
+    prompts = load_prompt()
+
+    # 遍历所有user prompt
+    for i in range(1, 9):  # 从user prompt1到user prompt8
+        prompt_key = f"user prompt{i}"
+
+        if prompt_key in prompts:
+            content = prompts[prompt_key]
+            print(f"\n🔄 正在处理 {prompt_key}...")
+
+            # 记录开始时间
+            start_time = time.time()
+
+            try:
+                # 生成JSON
+                json_result = await generator.generate_layout_json(content)
+
+                # 尝试解析JSON以确保格式正确
+                parsed_json = json.loads(json_result)
+
+                # 计算耗时
+                end_time = time.time()
+                elapsed_time = end_time - start_time
+
+                # 生成文件名（包含耗时）
+                filename = f"ppt_layout_{i}_{elapsed_time:.1f}s.json"
+                filepath = os.path.join(output_folder, filename)
+
+                # 保存到文件，格式化输出
+                with open(filepath, "w", encoding="utf-8") as f:
+                    json.dump(parsed_json, f, ensure_ascii=False, indent=2)
+
+                print(
+                    f"✅ {prompt_key} 已保存到: {filepath} (耗时: {elapsed_time:.2f}秒)")
+
+            except json.JSONDecodeError as e:
+                # 计算耗时
+                end_time = time.time()
+                elapsed_time = end_time - start_time
+
+                print(f"❌ {prompt_key} JSON格式错误: {e} (耗时: {elapsed_time:.2f}秒)")
+                # 保存原始文本作为备用
+                filename = f"ppt_layout_{i}_{elapsed_time:.1f}s_raw.txt"
+                filepath = os.path.join(output_folder, filename)
+                with open(filepath, "w", encoding="utf-8") as f:
+                    f.write(json_result)
+                print(f"原始内容已保存到: {filepath}")
+
+            except Exception as e:
+                # 计算耗时
+                end_time = time.time()
+                elapsed_time = end_time - start_time
+
+                print(f"❌ {prompt_key} 处理失败: {e} (耗时: {elapsed_time:.2f}秒)")
+
+        else:
+            print(f"⚠️ 未找到 {prompt_key}")
+
+    # 计算总耗时
+    total_end_time = time.time()
+    total_elapsed_time = total_end_time - total_start_time
+
+    print(f"\n🎉 所有处理完成！文件保存在: {output_folder}/")
+    print(f"⏱️ 总耗时: {total_elapsed_time:.2f}秒")
 
 if __name__ == "__main__":
     asyncio.run(main())

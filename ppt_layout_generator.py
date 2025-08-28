@@ -37,8 +37,8 @@ class DirectJSONGenerator:
         start_time = time.time()
 
         response = self.client.chat.completions.create(
-            model="deepseek-reasoner",
-            # model="qwen-vl-max",
+            # model="deepseek-reasoner",
+            model="qwen-plus",
             messages=messages,
             temperature=0.1
         )
@@ -82,10 +82,21 @@ async def main():
 
             # 记录开始时间
             start_time = time.time()
-
             try:
                 # 生成JSON
                 json_result = await generator.generate_layout_json(content)
+
+                # 去除 markdown 代码块包裹
+                if json_result.strip().startswith("```"):
+                    json_result = json_result.strip()
+                    # 去掉前缀 ```json 或 ```
+                    if json_result.startswith("```json"):
+                        json_result = json_result[len("```json"):].strip()
+                    elif json_result.startswith("```"):
+                        json_result = json_result[len("```"):].strip()
+                    # 去掉后缀 ```
+                    if json_result.endswith("```"):
+                        json_result = json_result[:-3].strip()
 
                 # 尝试解析JSON以确保格式正确
                 parsed_json = json.loads(json_result)
